@@ -1,4 +1,3 @@
-
 -- Set <space> as the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
@@ -80,19 +79,16 @@ vim.opt.relativenumber = true
 vim.g.mkdp_auto_start = 1
 
 -- Taken from https://stackoverflow.com/questions/77466697/how-to-automatically-format-on-save
-vim.api.nvim_create_augroup("AutoFormat", {})
+vim.api.nvim_create_augroup('AutoFormat', {})
 
-vim.api.nvim_create_autocmd(
-    "BufWritePost",
-    {
-        pattern = "*.py",
-        group = "AutoFormat",
-        callback = function()
-            vim.cmd("silent !black --quiet %")
-            vim.cmd("edit")
-        end,
-    }
-)
+vim.api.nvim_create_autocmd('BufWritePost', {
+  pattern = '*.py',
+  group = 'AutoFormat',
+  callback = function()
+    vim.cmd 'silent !black --quiet %'
+    vim.cmd 'edit'
+  end,
+})
 
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
@@ -144,7 +140,6 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   end,
 })
 
-
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
@@ -182,10 +177,12 @@ require('lazy').setup({
   { 'numToStr/Comment.nvim', opts = {} },
 
   {
-    "iamcco/markdown-preview.nvim",
-    cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
-    ft = { "markdown" },
-    build = function() vim.fn["mkdp#util#install"]() end,
+    'iamcco/markdown-preview.nvim',
+    cmd = { 'MarkdownPreviewToggle', 'MarkdownPreview', 'MarkdownPreviewStop' },
+    ft = { 'markdown' },
+    build = function()
+      vim.fn['mkdp#util#install']()
+    end,
   },
 
   -- Here is a more advanced example where we pass configuration
@@ -662,6 +659,12 @@ require('lazy').setup({
         -- You can use a sub-list to tell conform to run *until* a formatter
         -- is found.
         -- javascript = { { "prettierd", "prettier" } },
+        tex = { 'latexindent' },
+      },
+      format_on_save = {
+        -- These options will be passed to conform.format()
+        timeout_ms = 500,
+        lsp_format = 'fallback',
       },
     },
   },
@@ -714,8 +717,21 @@ require('lazy').setup({
             luasnip.lsp_expand(args.body)
           end,
         },
-        completion = { completeopt = 'menu,menuone,noinsert,noselect' },
-
+        completion = {
+          autocomplete = { 'InsertEnter', 'TextChanged' },
+          completeopt = 'menu,menuone,noselect',
+        },
+        experimental = {
+          ghost_text = true,
+        },
+        performance = {
+          debounce = 200,
+          throttle = 200,
+          fetching_timeout = 200,
+          async_budget = 200,
+          max_view_entries = 10,
+          confirm_resolve_timeout = 200,
+        },
         -- For an understanding of why these mappings were
         -- chosen, you will need to read `:help ins-completion`
         --
@@ -953,9 +969,9 @@ require('lazy').setup({
 
       dap.configurations.cpp = {
         {
-          name = "Launch file",
-          type = "cppdbg",
-          request = "launch",
+          name = 'Launch file',
+          type = 'cppdbg',
+          request = 'launch',
           program = function()
             return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
           end,
@@ -963,9 +979,9 @@ require('lazy').setup({
           stopAtEntry = true,
           setupCommands = {
             {
-               text = '-enable-pretty-printing',
-               description =  'enable pretty printing',
-               ignoreFailures = false,
+              text = '-enable-pretty-printing',
+              description = 'enable pretty printing',
+              ignoreFailures = false,
             },
           },
         },
@@ -982,15 +998,15 @@ require('lazy').setup({
           end,
           setupCommands = {
             {
-               text = '-enable-pretty-printing',
-               description =  'enable pretty printing',
-               ignoreFailures = false,
+              text = '-enable-pretty-printing',
+              description = 'enable pretty printing',
+              ignoreFailures = false,
             },
           },
         },
       }
     end,
-  }
+  },
 }, {
   ui = {
     -- If you are using a Nerd Font: set icons to an empty table which will use the
