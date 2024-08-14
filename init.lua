@@ -172,6 +172,8 @@ require('lazy').setup({
   --
   --  This is equivalent to:
   --    require('Comment').setup({})
+  'weirongxu/plantuml-previewer.vim',
+  'tyru/open-browser.vim',
 
   -- "gc" to comment visual regions/lines
   { 'numToStr/Comment.nvim', opts = {} },
