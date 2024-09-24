@@ -3,7 +3,6 @@
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
-
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = true
 
@@ -78,6 +77,7 @@ vim.opt.softtabstop = 4
 vim.opt.shiftwidth = 4
 vim.opt.expandtab = true
 vim.opt.relativenumber = true
+vim.opt.textwidth = 80
 
 vim.g.mkdp_auto_start = 1
 
@@ -93,8 +93,12 @@ vim.api.nvim_create_autocmd('BufWritePost', {
   end,
 })
 
--- [[ Basic Keymaps ]]
---  See `:help vim.keymap.set()`
+vim.api.nvim_create_autocmd({ 'BufRead', 'BufNewFile' }, {
+  pattern = { '*.puml', '*.plantuml' },
+  callback = function()
+    vim.bo.filetype = 'plantuml'
+  end,
+})
 
 -- Clear highlights on search when pressing <Esc> in normal mode
 --  See `:help hlsearch`
@@ -152,6 +156,17 @@ if not vim.uv.fs_stat(lazypath) then
 end ---@diagnostic disable-next-line: undefined-field
 vim.opt.rtp:prepend(lazypath)
 
+-- used for indentation
+local highlight = {
+  'RainbowRed',
+  'RainbowYellow',
+  'RainbowBlue',
+  'RainbowOrange',
+  'RainbowGreen',
+  'RainbowViolet',
+  'RainbowCyan',
+}
+
 -- [[ Configure and install plugins ]]
 --
 --  To check the current status of your plugins, run
@@ -166,6 +181,9 @@ vim.opt.rtp:prepend(lazypath)
 require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
+  'tpope/vim-eunuch',
+  'tpope/vim-unimpaired',
+  'HiPhish/rainbow-delimiters.nvim',
 
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
@@ -175,9 +193,54 @@ require('lazy').setup({
   --
   --  This is equivalent to:
   --    require('Comment').setup({})
-  'weirongxu/plantuml-previewer.vim',
-  'tyru/open-browser.vim',
+  {
 
+    'weirongxu/plantuml-previewer.vim',
+    ft = 'plantuml', -- Make sure it loads on plantuml filetype
+    config = function() end,
+  },
+  'tyru/open-browser.vim',
+  {
+    'windwp/nvim-autopairs',
+    event = 'InsertEnter',
+    config = true,
+    -- use opts = {} for passing setup options
+    -- this is equivalent to setup({}) function
+  },
+  {
+    'lukas-reineke/indent-blankline.nvim',
+    main = 'ibl',
+    ---@module "ibl"
+    ---@type ibl.config
+    opts = {},
+  },
+  {
+    'kdheepak/lazygit.nvim',
+    cmd = {
+      'LazyGit',
+      'LazyGitConfig',
+      'LazyGitCurrentFile',
+      'LazyGitFilter',
+      'LazyGitFilterCurrentFile',
+    },
+    -- optional for floating window border decoration
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+    },
+    -- setting the keybinding for LazyGit with 'keys' is recommended in
+    -- order to load the plugin when the command is run for the first time
+    keys = {
+      { '<leader>lg', '<cmd>LazyGit<cr>', desc = 'LazyGit' },
+    },
+  },
+  {
+    'gbprod/substitute.nvim',
+    opts = {
+      -- your configuration comes here
+      -- or leave it empty to use the default settings
+      -- refer to the configuration section below
+    },
+  },
   -- "gc" to comment visual regions/lines
   { 'numToStr/Comment.nvim', opts = {} },
 
@@ -561,6 +624,7 @@ require('lazy').setup({
       local capabilities = vim.lsp.protocol.make_client_capabilities()
       capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
 
+      local util = require 'lspconfig.util'
       -- Enable the following language servers
       --  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
       --
@@ -598,8 +662,30 @@ require('lazy').setup({
               },
               -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
               -- diagnostics = { disable = { 'missing-fields' } },
+              diagnostics = {
+                globals = { 'vim', 'texio', 'lfs' },
+              },
             },
           },
+        },
+
+        openscad_lsp = {
+          settings = {
+            openscad = {
+              search_paths = { '/libs' },
+              fmt_exe = { '/usr/bin/clang-format' },
+              fmt_style = { 'file' },
+              default_param = { 'true' },
+            },
+          },
+        },
+
+        verible = {
+          cmd = { 'verible-verilog-ls', '--indentation_spaces=4' },
+          filetypes = { 'systemverilog', 'verilog' },
+          root_dir = function(fname)
+            return util.path.dirname(fname)
+          end,
         },
       }
 
@@ -618,7 +704,6 @@ require('lazy').setup({
         'stylua', -- Used to format Lua code
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
-
       require('mason-lspconfig').setup {
         handlers = {
           function(server_name)
@@ -1046,5 +1131,45 @@ require('lazy').setup({
   },
 })
 
+-- Setup to set the plantuml jar path
+-- NOTE: this might not work yet
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = 'plantuml',
+  callback = function()
+    -- Use `which` to find the plantuml executable and concatenate the jar path
+    local jar_path = vim.fn.system 'echo "$(dirname $(which plantuml))/plantuml.jar"'
+
+    -- Trim whitespace from the result
+    jar_path = jar_path:gsub('%s+', '')
+
+    -- Set the global variable for plantuml_previewer
+    vim.g['plantuml_previewer#plantuml_jar_path'] = jar_path
+
+    -- Print the global variable for debugging
+    print('PlantUML jar path set to: ' .. vim.g['plantuml_previewer#plantuml_jar_path'])
+  end,
+})
+
+-- setup for indent-blankline
+local hooks = require 'ibl.hooks'
+-- create the highlight groups in the highlight setup hook, so they are reset
+-- every time the colorscheme changes
+hooks.register(hooks.type.HIGHLIGHT_SETUP, function()
+  vim.api.nvim_set_hl(0, 'RainbowRed', { fg = '#E06C75' })
+  vim.api.nvim_set_hl(0, 'RainbowYellow', { fg = '#E5C07B' })
+  vim.api.nvim_set_hl(0, 'RainbowBlue', { fg = '#61AFEF' })
+  vim.api.nvim_set_hl(0, 'RainbowOrange', { fg = '#D19A66' })
+  vim.api.nvim_set_hl(0, 'RainbowGreen', { fg = '#98C379' })
+  vim.api.nvim_set_hl(0, 'RainbowViolet', { fg = '#C678DD' })
+  vim.api.nvim_set_hl(0, 'RainbowCyan', { fg = '#56B6C2' })
+end)
+
+require('ibl').setup { indent = { highlight = highlight } }
+
+-- Source the local config if it exists
+local local_config = vim.fn.getcwd() .. '/.nvim/lua/local_config.lua'
+if vim.fn.filereadable(local_config) == 1 then
+  dofile(local_config)
+end
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
