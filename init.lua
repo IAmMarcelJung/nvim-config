@@ -681,11 +681,8 @@ require('lazy').setup({
         },
 
         verible = {
-          cmd = { 'verible-verilog-ls', '--indentation_spaces=4' },
+          cmd = { 'verible-verilog-ls', '--rules_config_search=true' },
           filetypes = { 'systemverilog', 'verilog' },
-          root_dir = function(fname)
-            return util.path.dirname(fname)
-          end,
         },
       }
 
@@ -757,6 +754,24 @@ require('lazy').setup({
         -- is found.
         -- javascript = { { "prettierd", "prettier" } },
         tex = { 'latexindent' },
+        verilog = { 'verible' },
+        systemverilog = { 'verible' },
+      },
+      formatters = {
+        verible = {
+          args = function(self, ctx)
+            local root_files = { '.git', '.svn' }
+            local project_root = require('conform.util').root_file(root_files)(self, ctx)
+            local paths = {}
+
+            if project_root then
+              table.insert(paths, project_root .. '/.rules.verible_format')
+            end
+
+            local flagfile_paths = table.concat(paths, ',')
+            return { '--flagfile=' .. flagfile_paths, ctx.filename }
+          end,
+        },
       },
       format_on_save = {
         -- These options will be passed to conform.format()
