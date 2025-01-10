@@ -99,6 +99,13 @@ vim.api.nvim_create_autocmd({ 'BufRead', 'BufNewFile' }, {
     vim.bo.filetype = 'plantuml'
   end,
 })
+-- Save Verilog and SystemVerilog files before formatting
+vim.api.nvim_create_autocmd('BufWritePre', {
+  pattern = '*.v,*.sv',
+  callback = function()
+    vim.cmd 'w'
+  end,
+})
 
 -- Clear highlights on search when pressing <Esc> in normal mode
 --  See `:help hlsearch`
