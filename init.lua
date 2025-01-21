@@ -1185,6 +1185,17 @@ hooks.register(hooks.type.HIGHLIGHT_SETUP, function()
   vim.api.nvim_set_hl(0, 'RainbowViolet', { fg = '#C678DD' })
   vim.api.nvim_set_hl(0, 'RainbowCyan', { fg = '#56B6C2' })
 end)
+--
+-- Load the Verilator utility module
+local verilator = require 'modules.insert_verilator_lint'
+
+-- Map the keybinding to the function
+vim.api.nvim_set_keymap(
+  'n',
+  '<leader>v',
+  [[:lua require('modules.insert_verilator_lint').insert_verilator_lint(vim.v.count1)<CR>]],
+  { noremap = true, silent = true }
+)
 
 require('ibl').setup { indent = { highlight = highlight } }
 
