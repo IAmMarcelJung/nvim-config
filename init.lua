@@ -107,6 +107,16 @@ vim.api.nvim_create_autocmd('BufWritePre', {
   end,
 })
 
+vim.api.nvim_create_autocmd({ 'BufWritePost' }, {
+  pattern = { '*.yaml', '*.yml' },
+  desc = 'Auto-format YAML files after saving',
+  callback = function()
+    local fileName = vim.api.nvim_buf_get_name(0)
+    vim.cmd(':silent !yamlfmt ' .. fileName)
+  end,
+  group = 'AutoFormat',
+})
+
 -- Clear highlights on search when pressing <Esc> in normal mode
 --  See `:help hlsearch`
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
