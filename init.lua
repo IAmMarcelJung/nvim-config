@@ -84,15 +84,6 @@ vim.g.mkdp_auto_start = 1
 -- Taken from https://stackoverflow.com/questions/77466697/how-to-automatically-format-on-save
 vim.api.nvim_create_augroup('AutoFormat', {})
 
-vim.api.nvim_create_autocmd('BufWritePost', {
-  pattern = '*.py',
-  group = 'AutoFormat',
-  callback = function()
-    vim.cmd 'silent !black --quiet %'
-    vim.cmd 'edit'
-  end,
-})
-
 vim.api.nvim_create_autocmd({ 'BufRead', 'BufNewFile' }, {
   pattern = { '*.puml', '*.plantuml' },
   callback = function()
@@ -208,6 +199,25 @@ require('lazy').setup({
   'tpope/vim-eunuch',
   'tpope/vim-unimpaired',
   'HiPhish/rainbow-delimiters.nvim',
+  {
+    'cameron-wags/rainbow_csv.nvim',
+    config = true,
+    ft = {
+      'csv',
+      'tsv',
+      'csv_semicolon',
+      'csv_whitespace',
+      'csv_pipe',
+      'rfc_csv',
+      'rfc_semicolon',
+    },
+    cmd = {
+      'RainbowDelim',
+      'RainbowDelimSimple',
+      'RainbowDelimQuoted',
+      'RainbowMultiDelim',
+    },
+  },
 
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
@@ -771,15 +781,13 @@ require('lazy').setup({
       -- end,
       formatters_by_ft = {
         lua = { 'stylua' },
-        -- Conform can also run multiple formatters sequentially
-        -- python = { "isort", "black" },
-        --
         -- You can use a sub-list to tell conform to run *until* a formatter
         -- is found.
         -- javascript = { { "prettierd", "prettier" } },
         tex = { 'latexindent' },
         verilog = { 'verible' },
         systemverilog = { 'verible' },
+        python = { 'ruff' },
       },
       formatters = {
         verible = {
@@ -795,6 +803,11 @@ require('lazy').setup({
             local flagfile_paths = table.concat(paths, ',')
             return { '--flagfile=' .. flagfile_paths, ctx.filename }
           end,
+        },
+        ruff = {
+          command = 'ruff',
+          args = { 'format', '-' },
+          stdin = true,
         },
       },
       format_on_save = {
@@ -996,7 +1009,7 @@ require('lazy').setup({
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
     opts = {
-      ensure_installed = { 'bash', 'c', 'cpp', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
+      ensure_installed = { 'bash', 'c', 'cpp', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'python' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
