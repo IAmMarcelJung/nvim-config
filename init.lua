@@ -195,6 +195,40 @@ local highlight = {
 -- NOTE: Here is where you install your plugins.
 require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
+
+  -- Taken from https://github.com/thecooldaniel/nvim-config-systemverilog
+  {
+    'mfussenegger/nvim-lint',
+    -- While all of these events are set, only a few
+    -- seem to actually trigger the linting process currently.
+    -- This seems to be a bug/missing feature in nvim-lint itself.
+
+    -- Long story short: you will most likely need to save to re-lint the file
+    event = {
+      'BufReadPre',
+      'BufNewFile',
+      'BufWritePost',
+      'TextChanged',
+      'InsertLeave',
+    },
+    config = function()
+      local lint = require 'lint'
+
+      -- Include languages here
+      require('setup_systemverilog').setupLinter(lint)
+
+      vim.api.nvim_create_autocmd({ 'BufEnter', 'BufWritePost', 'TextChanged', 'InsertLeave' }, {
+        group = vim.api.nvim_create_augroup('nvim_lint', { clear = true }),
+        callback = function()
+          vim.defer_fn(function()
+            -- try_lint() will run every linter configured with linters_by_ft().
+            -- See lua\setup_systemverilog.lua
+            lint.try_lint()
+          end, 1)
+        end,
+      })
+    end,
+  },
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
   'tpope/vim-eunuch',
   'tpope/vim-unimpaired',
@@ -717,6 +751,12 @@ require('lazy').setup({
         verible = {
           cmd = { 'verible-verilog-ls', '--rules_config_search=true' },
           filetypes = { 'systemverilog', 'verilog' },
+        },
+        require('setup_systemverilog').setupLsp(),
+        require('lspconfig').verible.setup {
+          cmd = { 'verible-verilog-ls' },
+          filetypes = { 'systemverilog', 'verilog' },
+          root_dir = require('lspconfig').util.root_pattern { '.git', 'verilator.f' },
         },
       }
 
