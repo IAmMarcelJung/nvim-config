@@ -79,8 +79,6 @@ vim.opt.expandtab = true
 vim.opt.relativenumber = true
 vim.opt.textwidth = 80
 
-vim.g.mkdp_auto_start = 1
-
 -- Taken from https://stackoverflow.com/questions/77466697/how-to-automatically-format-on-save
 vim.api.nvim_create_augroup('AutoFormat', {})
 
@@ -313,11 +311,15 @@ require('lazy').setup({
   { 'numToStr/Comment.nvim', opts = {} },
 
   {
-    'iamcco/markdown-preview.nvim',
-    cmd = { 'MarkdownPreviewToggle', 'MarkdownPreview', 'MarkdownPreviewStop' },
-    ft = { 'markdown' },
-    build = function()
-      vim.fn['mkdp#util#install']()
+    'jannis-baum/vivify.vim',
+    config = function()
+      -- auto-open preview for markdown
+      vim.api.nvim_create_autocmd('FileType', {
+        pattern = 'markdown',
+        callback = function()
+          vim.cmd 'Vivify'
+        end,
+      })
     end,
   },
 
@@ -946,9 +948,7 @@ require('lazy').setup({
           --  Generally you don't need this, because nvim-cmp will display
           --  completions whenever it has completion options available.
           --
-          --  vim.g.mkdp_auto_start = 1
           --
-          --  vim.g.mkdp_auto_start = 1
           ['<C-Space>'] = cmp.mapping.complete {},
 
           -- Think of <c-l> as moving to the right of your snippet expansion.
