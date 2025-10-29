@@ -9,15 +9,15 @@
 local setup_systemverilog = {}
 
 function setup_systemverilog.setupLsp()
-  require('lspconfig').verible.setup {
-    -- cmd = { 'verible-verilog-ls', '--rules_config_search' },
+  vim.lsp.config('verible', {
     cmd = { 'verible-verilog-ls' },
-    root_dir = require('lspconfig').util.root_pattern { '.git', 'verilator.f' },
+    root_dir = function(fname)
+      return vim.fs.root(fname, { '.git', 'verilator.f' })
+    end,
     -- capabilities = capabilities,
     format_on_save = true,
-  }
+  })
 end
-
 function setup_systemverilog.setupLinter(lint)
   lint.linters_by_ft = {
     systemverilog = { 'verilator' },

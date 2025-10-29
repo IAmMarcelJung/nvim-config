@@ -755,11 +755,12 @@ require('lazy').setup({
           filetypes = { 'systemverilog', 'verilog' },
         },
         require('setup_systemverilog').setupLsp(),
-        require('lspconfig').verible.setup {
+        vim.lsp.config('verible', {
           cmd = { 'verible-verilog-ls' },
           filetypes = { 'systemverilog', 'verilog' },
-          root_dir = require('lspconfig').util.root_pattern { '.git', 'verilator.f' },
-        },
+          root_dir = vim.fs.root(0, { '.git', 'verilator.f' }),
+          -- other settings
+        })
       }
 
       -- Ensure the servers and tools above are installed
@@ -785,7 +786,7 @@ require('lazy').setup({
             -- by the server configuration above. Useful when disabling
             -- certain features of an LSP (for example, turning off formatting for tsserver)
             server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
-            require('lspconfig')[server_name].setup(server)
+            vim.lsp.config(server_name,server)
           end,
         },
       }
