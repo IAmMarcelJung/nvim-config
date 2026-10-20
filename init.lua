@@ -211,6 +211,7 @@ require('lazy').setup({
 
       -- Include languages here
       require('setup_systemverilog').setupLinter(lint)
+      lint.linters_by_ft.vhdl = { 'ghdl' }
 
       vim.api.nvim_create_autocmd({ 'BufEnter', 'BufWritePost', 'TextChanged', 'InsertLeave' }, {
         group = vim.api.nvim_create_augroup('nvim_lint', { clear = true }),
