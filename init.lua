@@ -1160,7 +1160,7 @@ require('lazy').setup({
       dap.adapters.cppdbg = {
         id = 'cppdbg',
         type = 'executable',
-        command = '/home/jonny/applications/vscode-cpptools/extension/debugAdapters/bin/OpenDebugAD7',
+        command = vim.fn.stdpath 'data' .. '/mason/bin/OpenDebugAD7',
       }
 
       dap.configurations.cpp = {
