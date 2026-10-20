@@ -105,6 +105,10 @@ vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 -- Diagnostic keymaps
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
+vim.diagnostic.config {
+  virtual_text = true,
+}
+
 vim.keymap.set('n', '<leader>tf', function()
   vim.g.disable_autoformat = not vim.g.disable_autoformat
   vim.notify('Auto-format ' .. (vim.g.disable_autoformat and 'disabled' or 'enabled'))
