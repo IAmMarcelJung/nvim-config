@@ -87,13 +87,6 @@ vim.api.nvim_create_autocmd({ 'BufRead', 'BufNewFile' }, {
     vim.bo.filetype = 'plantuml'
   end,
 })
--- Save Verilog and SystemVerilog files before formatting
-vim.api.nvim_create_autocmd('BufWritePre', {
-  pattern = '*.v,*.sv',
-  callback = function()
-    vim.cmd 'w'
-  end,
-})
 
 vim.api.nvim_create_autocmd({ 'BufWritePost' }, {
   pattern = { '*.yaml', '*.yml' },
@@ -829,18 +822,25 @@ require('lazy').setup({
       },
       formatters = {
         verible = {
+          command = 'verible-verilog-format',
           args = function(self, ctx)
             local root_files = { '.git', '.svn' }
             local project_root = require('conform.util').root_file(root_files)(self, ctx)
-            local paths = {}
+            local args = {}
 
             if project_root then
-              table.insert(paths, project_root .. '/.rules.verible_format')
+              local flagfile = project_root .. '/.rules.verible_format'
+              if vim.fn.filereadable(flagfile) == 1 then
+                table.insert(args, '--flagfile=' .. flagfile)
+              end
             end
 
-            local flagfile_paths = table.concat(paths, ',')
-            return { '--flagfile=' .. flagfile_paths, ctx.filename }
+            table.insert(args, '--indentation_spaces=4')
+            table.insert(args, '--stdin_name=' .. ctx.filename)
+            table.insert(args, '-')
+            return args
           end,
+          stdin = true,
         },
         ruff = {
           command = 'ruff',
