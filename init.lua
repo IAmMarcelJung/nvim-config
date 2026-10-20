@@ -77,7 +77,6 @@ vim.opt.softtabstop = 4
 vim.opt.shiftwidth = 4
 vim.opt.expandtab = true
 vim.opt.relativenumber = true
-vim.opt.textwidth = 80
 
 -- Taken from https://stackoverflow.com/questions/77466697/how-to-automatically-format-on-save
 vim.api.nvim_create_augroup('AutoFormat', {})
