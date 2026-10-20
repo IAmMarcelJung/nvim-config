@@ -693,7 +693,6 @@ require('lazy').setup({
       local capabilities = vim.lsp.protocol.make_client_capabilities()
       capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
 
-      local util = require 'lspconfig.util'
       -- Enable the following language servers
       --  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
       --
@@ -752,14 +751,10 @@ require('lazy').setup({
         verible = {
           cmd = { 'verible-verilog-ls', '--rules_config_search=true' },
           filetypes = { 'systemverilog', 'verilog' },
+          root_dir = function(fname)
+            return vim.fs.root(fname, { '.git', 'verilator.f' })
+          end,
         },
-        require('setup_systemverilog').setupLsp(),
-        vim.lsp.config('verible', {
-          cmd = { 'verible-verilog-ls' },
-          filetypes = { 'systemverilog', 'verilog' },
-          root_dir = vim.fs.root(0, { '.git', 'verilator.f' }),
-          -- other settings
-        })
       }
 
       -- Ensure the servers and tools above are installed
@@ -785,7 +780,8 @@ require('lazy').setup({
             -- by the server configuration above. Useful when disabling
             -- certain features of an LSP (for example, turning off formatting for tsserver)
             server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
-            vim.lsp.config(server_name,server)
+            vim.lsp.config(server_name, server)
+            vim.lsp.enable(server_name)
           end,
         },
       }
